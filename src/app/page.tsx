@@ -7,6 +7,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { GraduationCap, Search } from "lucide-react"
 import Link from "next/link"
+import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -130,20 +131,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Wave Footer */}
-      <footer>
-        <div className="mt-auto">
-          <svg
-            viewBox="0 0 1440 320"
-            className="w-full"
-            fill="#4a6b63"
-            preserveAspectRatio="none"
-          >
-            <path d="M0,96L80,106.7C160,117,320,139,480,149.3C640,160,800,160,960,138.7C1120,117,1280,75,1360,53.3L1440,32L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z"></path>
-          </svg>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

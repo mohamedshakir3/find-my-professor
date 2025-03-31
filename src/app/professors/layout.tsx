@@ -1,4 +1,5 @@
 import { TransitionProvider } from "@/hooks/use-shared-transition"
+import { Footer } from "@/components/footer"
 import "@/app/globals.css"
 
 export default function RootLayout({
@@ -6,5 +7,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return <TransitionProvider>{children}</TransitionProvider>
+  return (
+    <TransitionProvider>
+      {children}
+      <Footer className="bg-gray-50" />
+    </TransitionProvider>
+  )
 }

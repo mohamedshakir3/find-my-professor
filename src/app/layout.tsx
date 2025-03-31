@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { GraduationCap, Search } from "lucide-react"
 import Link from "next/link"
+import { Footer } from "@/components/footer"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
@@ -39,7 +40,6 @@ export default function RootLayout({
             </Link>
           </div>
         </header>
-
         {children}
       </body>
     </html>
