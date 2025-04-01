@@ -2,6 +2,8 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useSharedTransition } from "@/hooks/use-shared-transition"
 
 export interface FilterPanelProps {
   departments: string[]
@@ -38,7 +40,17 @@ export function FilterPanel({
   departmentSearchQuery,
   setDepartmentSearchQuery,
 }: FilterPanelProps) {
+  const { startTransition } = useSharedTransition()
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
   const toggleDepartment = (department: string) => {
+    updateFilters(
+      "department",
+      department,
+      !selectedDepartments.includes(department)
+    )
     setSelectedDepartments(
       selectedDepartments.includes(department)
         ? selectedDepartments.filter((d) => d !== department)
@@ -47,6 +59,7 @@ export function FilterPanel({
   }
 
   const toggleFaculty = (faculty: string) => {
+    updateFilters("faculty", faculty, !selectedFaculties.includes(faculty))
     setSelectedFaculties(
       selectedFaculties.includes(faculty)
         ? selectedFaculties.filter((c) => c !== faculty)
@@ -55,11 +68,41 @@ export function FilterPanel({
   }
 
   const toggleUniversity = (university: string) => {
+    updateFilters(
+      "university",
+      university,
+      !selectedUniversities.includes(university)
+    )
     setSelectedUniversities(
       selectedUniversities.includes(university)
         ? selectedUniversities.filter((c) => c !== university)
         : [...selectedUniversities, university]
     )
+  }
+
+  const updateFilters = (
+    type: "university" | "faculty" | "department",
+    value: string,
+    isChecked: boolean
+  ) => {
+    const params = new URLSearchParams(searchParams.toString())
+
+    const currentValues = params.getAll(type)
+
+    if (isChecked) {
+      if (!currentValues.includes(value)) {
+        params.append(type, value)
+      }
+    } else {
+      const newValues = currentValues.filter((v) => v !== value)
+      params.delete(type)
+      newValues.forEach((v) => params.append(type, v))
+    }
+
+    startTransition &&
+      startTransition(() => {
+        router.push(`${pathname}?${params.toString()}`)
+      })
   }
 
   return (

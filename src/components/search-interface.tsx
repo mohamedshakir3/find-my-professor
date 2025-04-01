@@ -4,11 +4,17 @@ import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { SlidersHorizontal, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  Sheet,
+  SheetTitle,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 import { universities, faculties, departments } from "@/data/universities"
 import { SearchBox } from "@/components/search-bar"
 import { ProfessorResults } from "@/components/professor-results"
 import { FilterPanel } from "@/components/filter-panel"
+import { useRouter } from "next/navigation"
 
 export default function SearchInterface({
   professors,
@@ -17,52 +23,17 @@ export default function SearchInterface({
   professors: any[]
   query?: string
 }) {
+  const router = useRouter()
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
 
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([])
   const [selectedFaculties, setSelectedFaculties] = useState<string[]>([])
-  const [selectedColleges, setSelectedColleges] = useState<string[]>([])
   const [selectedUniversities, setSelectedUniversities] = useState<string[]>(
     []
   )
   const [universitySearchQuery, setUniversitySearchQuery] = useState("")
   const [facultySearchQuery, setFacultySearchQuery] = useState("")
   const [departmentSearchQuery, setDepartmentSearchQuery] = useState("")
-
-  const [filteredProfessors, setFilteredProfessors] = useState(professors)
-  useEffect(() => {
-    let filtered = professors
-
-    if (selectedDepartments.length > 0) {
-      filtered = filtered.filter((professor) =>
-        selectedDepartments.includes(professor.department)
-      )
-    }
-
-    if (selectedFaculties.length > 0) {
-      filtered = filtered.filter((professor) =>
-        selectedFaculties.includes(professor.faculty)
-      )
-    }
-
-    if (selectedUniversities.length > 0) {
-      filtered = filtered.filter((professor) =>
-        selectedUniversities.includes(professor.university)
-      )
-    }
-
-    setFilteredProfessors(filtered)
-  }, [
-    professors,
-    selectedDepartments,
-    selectedFaculties,
-    selectedColleges,
-    selectedUniversities,
-  ])
-
-  useEffect(() => {
-    setFilteredProfessors(professors)
-  }, [professors])
 
   const filteredUniversities = universities.filter((university) =>
     university.toLowerCase().includes(universitySearchQuery.toLowerCase())
@@ -75,11 +46,20 @@ export default function SearchInterface({
   const filteredDepartments = departments.filter((department) =>
     department.toLowerCase().includes(departmentSearchQuery.toLowerCase())
   )
+  useEffect(() => {
+    const params = new URLSearchParams()
 
+    if (query) params.set("q", query)
+
+    selectedUniversities.forEach((u) => params.append("universities", u))
+    selectedFaculties.forEach((f) => params.append("faculties", f))
+    selectedDepartments.forEach((d) => params.append("departments", d))
+
+    router.push(`?${params.toString()}`, { scroll: false })
+  }, [selectedUniversities, selectedFaculties, selectedDepartments, query])
   const resetFilters = () => {
     setSelectedDepartments([])
     setSelectedFaculties([])
-    setSelectedColleges([])
     setSelectedUniversities([])
     setUniversitySearchQuery("")
     setFacultySearchQuery("")
@@ -110,10 +90,11 @@ export default function SearchInterface({
             </SheetTrigger>
             <SheetContent
               side="right"
-              className="w-[300px] sm:w-[400px] overflow-y-auto"
+              className="w-[80%] sm:w-[400px] p-2 overflow-y-auto"
             >
-              <div className="py-4">
-                <div className="flex items-center justify-between mb-6">
+              <SheetTitle className="sr-only">Menu</SheetTitle>
+              <div className="pt-8">
+                <div className="flex items-center justify-between mb-2">
                   <h2 className="text-lg font-semibold">Filters</h2>
                   <Button variant="outline" size="sm" onClick={resetFilters}>
                     Reset
@@ -144,7 +125,7 @@ export default function SearchInterface({
         {/* Search results count */}
         <div className="mb-4">
           <p className="text-sm text-muted-foreground">
-            Showing {filteredProfessors.length} professors
+            Showing {professors.length} professors
             {query && <span> for "{query}"</span>}
           </p>
         </div>
@@ -182,8 +163,8 @@ export default function SearchInterface({
 
           {/* Results */}
           <div className="flex-1">
-            {filteredProfessors.length > 0 ? (
-              <ProfessorResults professors={filteredProfessors} />
+            {professors.length > 0 ? (
+              <ProfessorResults professors={professors} />
             ) : (
               <div className="rounded-lg border bg-white p-8 text-center">
                 <div className="mx-auto max-w-md">
