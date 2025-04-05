@@ -31,16 +31,17 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
       setTimeout(() => setCopied(false), 2000)
     }
   }
+
   return (
     <div
       key={professor.id}
       className="flex flex-col overflow-hidden bg-white rounded-lg border hover:shadow-md transition-shadow"
     >
-      <div className="bg-[#4a6b63] p-4 text-white rounded-t-lg">
+      <div className="bg-[#31404f] p-4 text-white rounded-t-lg">
         <div className="flex items-start gap-3">
-          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-white flex items-center justify-center">
+          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-white flex items-center justify-center p-1">
             <Image
-              src={professor.university_logo}
+              src={professor.university_logo || "/placeholder.png"}
               alt={`${professor.name}'s avatar`}
               width={64}
               height={64}
@@ -61,7 +62,7 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
               <Badge
                 key={index}
                 variant="outline"
-                className="rounded-md bg-[#e8f0ee] text-[#4a6b63] hover:bg-[#d8e6e2] border-[#4a6b63]/20 text-xs whitespace-normal break-words max-w-full"
+                className="rounded-md bg-[#fdecea] text-[#e35535] hover:bg-[#f8d3cf] border-[#e35535]/20 text-xs whitespace-normal break-words max-w-full"
               >
                 {interest}
               </Badge>
@@ -70,15 +71,19 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
         </div>
       </div>
       <div className="flex justify-between bg-gray-50 px-4 py-3 rounded-b-lg">
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1 text-[#4a6b63] border-[#4a6b63]/30 hover:bg-[#e8f0ee] hover:text-[#3a5a52]"
-          onClick={copyToClipboard}
-        >
-          {copied ? <Check size={14} /> : <Mail size={14} />}
-          <span className="hidden sm:inline">Contact</span>
-        </Button>
+        {professor.email ? (
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1 text-[#31404f] border-[#31404f]/30 hover:bg-[#e8f0ee] hover:text-[#3a5a52]"
+            onClick={copyToClipboard}
+          >
+            {copied ? <Check size={14} /> : <Mail size={14} />}
+            <span className="hidden sm:inline">Contact</span>
+          </Button>
+        ) : (
+          <div></div>
+        )}
 
         <Link
           href={professor.website}
@@ -88,7 +93,7 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
           <Button
             variant="outline"
             size="sm"
-            className="gap-1 text-[#4a6b63] border-[#4a6b63]/30 hover:bg-[#e8f0ee] hover:text-[#3a5a52]"
+            className="gap-1 text-[#31404f] border-[#31404f]/30 hover:bg-[#e8f0ee] hover:text-[#3a5a52]"
           >
             <ExternalLink className="h-4 w-4" />
             Website

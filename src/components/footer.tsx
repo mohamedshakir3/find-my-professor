@@ -10,14 +10,14 @@ export function Footer({ className }: { className?: string }) {
         <svg
           viewBox="0 0 1440 320"
           className="w-full mb-[-1px]"
-          fill="#4a6b63"
+          fill="#31404f"
           preserveAspectRatio="none"
         >
           <path d="M0,96L80,106.7C160,117,320,139,480,149.3C640,160,800,160,960,138.7C1120,117,1280,75,1360,53.3L1440,32L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z"></path>
         </svg>
 
         {/* Footer content */}
-        <div className="bg-[#4a6b63] text-white pb-8">
+        <div className="bg-[#31404f] text-white pb-8">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>

@@ -260,6 +260,7 @@ export async function searchProfessors(
       university: prof.university,
       faculty: prof.faculty,
       department: prof.department,
+      email: prof.email,
       website: prof.website,
       university_logo: prof.university_logo,
       research_interests: prof.research_interests,

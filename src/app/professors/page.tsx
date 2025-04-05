@@ -33,8 +33,6 @@ export default async function ProfessorsPage({
     departments
   )
 
-  console.log(totalPages)
-
   return (
     <>
       <Suspense fallback={<CardGridSkeleton />}>

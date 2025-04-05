@@ -26,13 +26,22 @@ export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="relative bg-[#4a6b63] px-4 pb-24 pt-12 text-white md:px-6 md:pb-32 md:pt-16">
-        <div className="mx-auto max-w-4xl">
-          <div className="flex flex-col items-center md:flex-row md:justify-between">
-            <div className="mb-8 max-w-xl text-center md:mb-0 md:text-left">
+      <section className="relative bg-[#31404f] px-4 pb-24 pt-12 text-white md:px-6 md:pb-32 md:pt-16">
+        <div className="mx-auto max-w-3xl px-4">
+          <div className="flex flex-col items-center md:flex-row md:items-center md:gap-6">
+            <div className="mb-8 max-w-xl text-center md:mb-0 md:text-left md:flex-1">
               <h1 className="mb-4 text-3xl font-bold md:text-4xl lg:text-5xl">
                 Find a professor and connect with their expertise!
               </h1>
+            </div>
+            <div className="hidden md:block md:flex-shrink-0">
+              <Image
+                src="/professor-penguin.png"
+                alt="Professor Penguin"
+                width={180}
+                height={180}
+                className="transform -translate-y-2"
+              />
             </div>
           </div>
         </div>
@@ -55,7 +64,7 @@ export default function Home() {
             </div>
             <Button
               type="submit"
-              className="rounded-full bg-[#6b8680] hover:bg-[#5a7570]"
+              className="rounded-full bg-[#31404e] hover:bg-[#2b3a44]"
             >
               SEARCH
             </Button>
@@ -70,7 +79,7 @@ export default function Home() {
             <h2 className="text-2xl font-semibold md:text-3xl">
               Everything you need for your research journey,
               <br /> all in{" "}
-              <span className="text-[#3a5a52] font-bold">one place</span>
+              <span className="text-[#31404e] font-bold">one place</span>
             </h2>
           </div>
 
@@ -79,10 +88,10 @@ export default function Home() {
               <CardContent className="p-6">
                 <div className="mb-4 h-48 overflow-hidden rounded-lg p-2">
                   <Image
-                    src="/hero-image-1.jpeg"
+                    src="/penguin-magnifying.png"
                     alt="Academic profiles illustration"
-                    width={280}
-                    height={180}
+                    width={300}
+                    height={300}
                     className="h-full w-full object-contain"
                   />
                 </div>
@@ -97,10 +106,10 @@ export default function Home() {
               <CardContent className="p-6">
                 <div className="mb-4 h-48 overflow-hidden rounded-lg bg-gray-100 p-2">
                   <Image
-                    src="/hero-image-2.jpeg"
+                    src="/penguin-book.PNG"
                     alt="Search illustration"
-                    width={280}
-                    height={180}
+                    width={200}
+                    height={200}
                     className="h-full w-full object-contain"
                   />
                 </div>
@@ -115,10 +124,10 @@ export default function Home() {
               <CardContent className="p-6">
                 <div className="mb-4 h-48 overflow-hidden rounded-lg bg-gray-100 p-2">
                   <Image
-                    src="/hero-image-3.jpeg"
+                    src="/penguin-laptop.png"
                     alt="Updates illustration"
-                    width={280}
-                    height={180}
+                    width={200}
+                    height={200}
                     className="h-full w-full object-contain"
                   />
                 </div>

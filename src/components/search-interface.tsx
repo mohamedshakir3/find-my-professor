@@ -15,6 +15,7 @@ import { SearchBox } from "@/components/search-bar"
 import { ProfessorResults } from "@/components/professor-results"
 import { FilterPanel } from "@/components/filter-panel"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 export default function SearchInterface({
   professors,
@@ -168,6 +169,13 @@ export default function SearchInterface({
             ) : (
               <div className="rounded-lg border bg-white p-8 text-center">
                 <div className="mx-auto max-w-md">
+                  <Image
+                    src="/sad-penguin.png"
+                    alt="No results illustration"
+                    width={200}
+                    height={200}
+                    className="mx-auto mb-6"
+                  />
                   <h2 className="text-2xl font-semibold mb-2">
                     No Results Found
                   </h2>
