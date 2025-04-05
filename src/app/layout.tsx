@@ -20,6 +20,18 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="apple-mobile-web-app-title" content="findmyprof" />
+        <meta property="og:title" content="Find My Professor" />
+        <meta
+          property="og:description"
+          content="Find professors and connect with their expertise."
+        />
+        <meta property="og:url" content="https://www.findmyprofessor.ca" />
+        <meta
+          property="og:image"
+          content="https://www.findmyprofessor.ca/thumbnail.jpg"
+        />
+
+        <meta property="og:type" content="website" />
       </head>
       <body className={inter.className}>
         <header className="w-full border-b bg-[#31404f] shadow-sm">
