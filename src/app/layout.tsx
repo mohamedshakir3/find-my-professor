@@ -75,5 +75,6 @@ const OPEN_GRAPH = {
   title: "Find My Professor",
   description: "Find professors and connect with their expertise.",
   url: "https://www.findmyprofessor.ca",
-  image: "https://www.findmyprofessor.ca/thumbnail.png",
+  image:
+    "https://opengraph.b-cdn.net/production/images/1bd91fbb-5cfb-4f1c-9efa-017ef37dd21c.png?token=VsI-qZSXMxdt53xuP4NoWSy8FdLFmt3QjzZNhIUGU88&height=601&width=1200&expires=33279890102",
 }
