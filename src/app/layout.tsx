@@ -28,7 +28,7 @@ export default function RootLayout({
         <meta property="og:url" content="https://www.findmyprofessor.ca" />
         <meta
           property="og:image"
-          content="https://www.findmyprofessor.ca/thumbnail.jpg"
+          content="https://www.findmyprofessor.ca/thumbnail.png"
         />
 
         <meta property="og:type" content="website" />
