@@ -9,13 +9,6 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata = {
   title: "Find My Professor",
   description: "Find professors and connect with their expertise",
-  openGraph: {
-    title: "Find My Professor",
-    description: "Find professors and connect with their expertise.",
-    url: "https://www.findmyprofessor.ca",
-    images: ["https://www.findmyprofessor.ca/thumbnail.png"],
-    type: "website",
-  },
 }
 
 export default function RootLayout({
@@ -28,28 +21,19 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-title" content="findmyprof" />
 
+        <meta name="description" content={OPEN_GRAPH.description} />
+        <meta property="og:type" content={"website"} />
+        <meta property="og:url" content={OPEN_GRAPH.url} />
+        <meta property="og:title" content={OPEN_GRAPH.title} />
+        <meta property="og:description" content={OPEN_GRAPH.description} />
+        <meta property="og:image" content={OPEN_GRAPH.image} />
+        <meta property="twitter:image" content={OPEN_GRAPH.image} />
+        <meta property="twitter:card" content={"summary_large_image"} />
+        <meta property="twitter:url" content={OPEN_GRAPH.url} />
+        <meta property="twitter:title" content={OPEN_GRAPH.title} />
         <meta
-          property="og:image"
-          content="https://www.findmyprofessor.ca/thumbnail.png"
-        />
-        <meta property="og:image:type" content="image/png" />
-        <meta property="og:image:width" content="2254" />
-        <meta property="og:image:height" content="868" />
-
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta property="twitter:domain" content="findmyprofessor.ca" />
-        <meta
-          property="twitter:url"
-          content="https://www.findmyprofessor.ca/"
-        />
-        <meta name="twitter:title" content="Find My Professor" />
-        <meta
-          name="twitter:description"
-          content="Find professors and connect with their expertise."
-        />
-        <meta
-          name="twitter:image"
-          content="https://opengraph.b-cdn.net/production/images/a16b4b84-c7c4-4da0-b02d-065cab697c34.png?token=shzmIjmQXTuO2vzDmikDyN5JKv7S1mDslHKMDW2vClc&height=462&width=1200&expires=33279888748"
+          property="twitter:description"
+          content={OPEN_GRAPH.description}
         />
       </head>
       <body className={inter.className}>
@@ -85,4 +69,11 @@ export default function RootLayout({
       </body>
     </html>
   )
+}
+
+const OPEN_GRAPH = {
+  title: "Find My Professor",
+  description: "Find professors and connect with their expertise.",
+  url: "https://www.findmyprofessor.ca",
+  image: "https://www.findmyprofessor.ca/thumbnail.png",
 }
