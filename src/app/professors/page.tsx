@@ -1,5 +1,8 @@
 import SearchInterface from "@/components/search-interface"
-import { searchProfessors } from "@/actions/db-actions"
+import {
+  enhancedSearchProfessors,
+  searchProfessors,
+} from "@/actions/db-actions"
 import { Suspense } from "react"
 import { CardGridSkeleton } from "@/components/card-grid-skeleton"
 import { PaginationControls } from "@/components/pagination"

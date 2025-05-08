@@ -5,8 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { GraduationCap, Search } from "lucide-react"
-import Link from "next/link"
+import { Loader2, Search } from "lucide-react"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,10 +14,12 @@ import { Card, CardContent } from "@/components/ui/card"
 export default function Home() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
+      setIsLoading(true)
       router.push(`/professors?q=${searchQuery}`)
     }
   }
@@ -60,13 +61,21 @@ export default function Home() {
                 value={searchQuery}
                 className="flex-1 border-0 bg-transparent text-gray-900 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 onChange={(e) => setSearchQuery(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <Button
               type="submit"
               className="rounded-full bg-[#31404e] hover:bg-[#2b3a44]"
+              disabled={isLoading}
             >
-              SEARCH
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </>
+              ) : (
+                "SEARCH"
+              )}
             </Button>
           </form>
         </div>

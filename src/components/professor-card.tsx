@@ -1,9 +1,17 @@
+"use client"
+
 import Image from "next/image"
-import { Mail, ExternalLink, Check, University } from "lucide-react"
+import {
+  Mail,
+  ExternalLink,
+  Check,
+  ChevronUp,
+  ChevronDown,
+  Copy,
+} from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
 import Link from "next/link"
 
 export interface ProfessorCardProps {
@@ -23,6 +31,8 @@ export interface ProfessorCardProps {
 
 export function ProfessorCard({ professor }: ProfessorCardProps) {
   const [copied, setCopied] = useState<boolean>(false)
+  const [showMore, setShowMore] = useState<boolean>(false)
+
   const copyToClipboard = async () => {
     const textToCopy = professor.email
     if (textToCopy) {
@@ -31,6 +41,13 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
       setTimeout(() => setCopied(false), 2000)
     }
   }
+
+  const initialDisplayCount = 6
+  const hasMoreInterests =
+    professor.research_interests?.length > initialDisplayCount
+  const displayedInterests = showMore
+    ? professor.research_interests
+    : professor.research_interests?.slice(0, initialDisplayCount)
 
   return (
     <div
@@ -57,30 +74,63 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
       </div>
       <div className="flex-grow p-4">
         <div className="flex flex-wrap gap-2">
-          {professor.research_interests?.map(
-            (interest: any, index: number) => (
-              <Badge
-                key={index}
-                variant="outline"
-                className="rounded-md bg-[#fdecea] text-[#e35535] hover:bg-[#f8d3cf] border-[#e35535]/20 text-xs whitespace-normal break-words max-w-full"
-              >
-                {interest}
-              </Badge>
-            )
-          )}
+          {displayedInterests?.map((interest: any, index: number) => (
+            <Badge
+              key={index}
+              variant="outline"
+              className="rounded-md bg-[#fdecea] text-[#e35535] hover:bg-[#f8d3cf] border-[#e35535]/20 text-xs whitespace-normal break-words max-w-full"
+            >
+              {interest}
+            </Badge>
+          ))}
         </div>
+        {hasMoreInterests && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowMore(!showMore)}
+            className="mt-2 text-xs text-gray-500 hover:text-gray-700 p-1 h-auto"
+          >
+            {showMore ? (
+              <span className="flex items-center">
+                Show Less
+                <ChevronUp className="ml-1 h-3 w-3" />
+              </span>
+            ) : (
+              <span className="flex items-center">
+                Show More
+                <ChevronDown className="ml-1 h-3 w-3" />
+              </span>
+            )}
+          </Button>
+        )}
       </div>
       <div className="flex justify-between bg-gray-50 px-4 py-3 rounded-b-lg">
         {professor.email ? (
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1 text-[#31404f] border-[#31404f]/30 hover:bg-[#e8f0ee] hover:text-[#3a5a52]"
-            onClick={copyToClipboard}
-          >
-            {copied ? <Check size={14} /> : <Mail size={14} />}
-            <span className="hidden sm:inline">Contact</span>
-          </Button>
+          <div className="flex">
+            <div className="relative inline-flex rounded-md">
+              <Link href={`mailto:${professor.email}`}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1 text-[#31404f] border-[#31404f]/30 hover:bg-[#e8f0ee] hover:text-[#3a5a52] rounded-r-none pr-8"
+                >
+                  <Mail size={14} />
+                  <span className="hidden sm:inline">Contact</span>
+                </Button>
+              </Link>
+              <div className="absolute right-0 inset-y-0 flex items-center">
+                <span className="h-4/5 w-px bg-[#31404f]/30"></span>
+              </div>
+              <button
+                onClick={copyToClipboard}
+                className="rounded-l-none rounded-r-md border border-[#31404f]/30 border-l-0 px-2 inline-flex items-center justify-center bg-white text-[#31404f] hover:bg-[#e8f0ee] hover:text-[#3a5a52] focus:z-10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#31404f]"
+                aria-label="Copy email"
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+              </button>
+            </div>
+          </div>
         ) : (
           <div></div>
         )}

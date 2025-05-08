@@ -16,161 +16,25 @@ export type Professor = {
   similarity?: number
 }
 
+export type NewProfessor = {
+  id: number
+  name: string
+  email: string
+  university: string
+  faculty: string
+  department: string
+  website: string
+  research_interests: string[]
+  similarity: number
+  total_count: number
+}
+
 export type PaginatedResult = {
   professors: Professor[]
   totalCount: number
   currentPage: number
   totalPages: number
   error: string | null
-}
-
-export async function findSimilarProfessors(
-  query: string,
-  page = 1,
-  pageSize = 10,
-  universities?: string[],
-  faculties?: string[],
-  departments?: string[]
-): Promise<PaginatedResult> {
-  const supabase = await createClient()
-
-  try {
-    if (!query || query.length < 3) {
-      console.log("Query too short, fetching default professors.")
-
-      const { count, error: countError } = await supabase
-        .from("professors")
-        .select("*", { count: "exact", head: true })
-
-      if (countError) {
-        console.error("Error counting professors:", countError)
-        return {
-          professors: [],
-          totalCount: 0,
-          currentPage: page,
-          totalPages: 0,
-          error: countError.message,
-        }
-      }
-
-      const totalCount = count || 0
-      const totalPages = Math.ceil(totalCount / pageSize)
-
-      const { data, error } = await supabase
-        .from("professors")
-        .select("*")
-        .range((page - 1) * pageSize, page * pageSize - 1)
-        .order("id", { ascending: true })
-
-      if (error) {
-        console.error("Error fetching default professors:", error)
-        return {
-          professors: [],
-          totalCount: 0,
-          currentPage: page,
-          totalPages: 0,
-          error: error.message,
-        }
-      }
-
-      return {
-        professors: data as Professor[],
-        totalCount,
-        currentPage: page,
-        totalPages,
-        error: null,
-      }
-    }
-
-    const embedding = await generateEmbedding(query)
-
-    const { data: matched, error: matchError } = await supabase.rpc(
-      "search_professors",
-      {
-        query_embedding: embedding,
-        match_threshold: 0.7,
-        match_count: 100,
-        search_term: query,
-        universities: universities,
-        faculties: faculties,
-        departments: departments,
-      }
-    )
-
-    if (matchError) {
-      console.error("Error executing search_professors:", matchError)
-      return {
-        professors: [],
-        totalCount: 0,
-        currentPage: page,
-        totalPages: 0,
-        error: matchError.message,
-      }
-    }
-
-    if (!matched || matched.length === 0) {
-      console.log("No matching professors found.")
-      return {
-        professors: [],
-        totalCount: 0,
-        currentPage: page,
-        totalPages: 0,
-        error: null,
-      }
-    }
-    const totalCount = matched.length
-    const totalPages = Math.ceil(totalCount / pageSize)
-
-    const profIds = matched
-      .slice((page - 1) * pageSize, page * pageSize)
-      .map((item: any) => item.prof_id)
-
-    const { data: professors, error: profError } = await supabase
-      .from("professors")
-      .select("*")
-      .in("id", profIds)
-
-    if (profError) {
-      console.error("Error fetching professors:", profError)
-      return {
-        professors: [],
-        totalCount,
-        currentPage: page,
-        totalPages,
-        error: profError.message,
-      }
-    }
-
-    const profsWithSimilarity = professors.map((prof: any) => ({
-      ...prof,
-      similarity:
-        matched.find((m: any) => m.prof_id === prof.id)?.similarity || 0,
-    }))
-
-    profsWithSimilarity.sort(
-      (a, b) => (b.similarity || 0) - (a.similarity || 0)
-    )
-
-    return {
-      professors: profsWithSimilarity,
-      totalCount,
-      currentPage: page,
-      totalPages,
-      error: null,
-    }
-  } catch (err) {
-    console.error("Error in findSimilarProfessors:", err)
-    return {
-      professors: [],
-      totalCount: 0,
-      currentPage: page,
-      totalPages: 0,
-      error:
-        err instanceof Error
-          ? err.message
-          : "Failed to find similar professors",
-    }
-  }
 }
 
 export async function searchProfessors(
@@ -286,177 +150,103 @@ export async function searchProfessors(
   }
 }
 
-function removeDuplicates<T>(array: T[], key: keyof T): T[] {
-  const seen = new Set()
-  return array.filter((item) => {
-    const value = item[key]
-    if (seen.has(value)) return false
-    seen.add(value)
-    return true
-  })
-}
-
-export async function addProfessor(
-  professorData: Omit<Professor, "id" | "similarity">
-) {
+export async function enhancedSearchProfessors(
+  query?: string,
+  page = 1,
+  pageSize = 10,
+  universities?: string[],
+  faculties?: string[],
+  departments?: string[]
+): Promise<PaginatedResult> {
   const supabase = await createClient()
 
   try {
-    const research_interests = Array.isArray(professorData.research_interests)
-      ? professorData.research_interests.join(" ")
-      : ""
+    if (!query || query.length < 3) {
+      console.log("Fetching default professors due to short query")
 
-    const past_universities = Array.isArray(professorData.past_education)
-      ? professorData.past_education
-          .map((edu: any) => edu.university || "")
-          .join(" ")
-      : ""
+      const { count, error: countError } = await supabase
+        .from("professors")
+        .select("*", { count: "exact", head: true })
 
-    const text_to_embed = `${professorData.name} ${professorData.university} ${
-      professorData.faculty
-    } ${
-      professorData.department || ""
-    } ${past_universities} ${research_interests}`
+      if (countError) throw new Error(countError.message)
 
-    const embedding = await generateEmbedding(text_to_embed)
+      const totalCount = count || 0
+      const totalPages = Math.ceil(totalCount / pageSize)
 
-    const { data, error } = await supabase
-      .from("professors")
-      .insert({
-        ...professorData,
-        embedding,
-      })
-      .select()
-      .single()
+      const { data, error } = await supabase
+        .from("professors")
+        .select("*")
+        .range((page - 1) * pageSize, page * pageSize - 1)
+        .order("id", { ascending: true })
 
-    if (error) throw new Error(error.message)
+      if (error) throw new Error(error.message)
 
-    revalidatePath("/professors")
-
-    return { professor: data as Professor, error: null }
-  } catch (err) {
-    console.error("Error in addProfessor:", err)
-    return {
-      professor: null,
-      error: err instanceof Error ? err.message : "Failed to add professor",
+      return {
+        professors: data as Professor[],
+        totalCount,
+        currentPage: page,
+        totalPages,
+        error: null,
+      }
     }
-  }
-}
+    const embedding = await generateEmbedding(query)
 
-export async function getUniversities(): Promise<string[]> {
-  const supabase = await createClient()
+    const { data, error } = await supabase.rpc("enhanced_search_profs", {
+      query_embedding: embedding,
+      search_term: query,
+      match_threshold: 0.5,
+      page_size: pageSize,
+      page_number: page,
+      universities:
+        universities && universities.length > 0 ? universities : null,
+      faculties: faculties && faculties.length > 0 ? faculties : null,
+      departments: departments && departments.length > 0 ? departments : null,
+    })
+    if (error) {
+      console.error("Error executing enhanced_search_profs:", error)
+      throw new Error(error.message)
+    }
+    if (!data || data.length === 0) {
+      console.log("No matching professors found.")
+      return {
+        professors: [],
+        totalCount: 0,
+        currentPage: page,
+        totalPages: 0,
+        error: null,
+      }
+    }
 
-  const { data, error } = await supabase.from("universities").select("*")
+    const totalCount = Number((data[0] as any).total_count)
+    const totalPages = Math.ceil(totalCount / pageSize)
 
-  if (error) {
-    console.error(error)
-    return []
-  }
-
-  return data
-}
-
-export async function getFacultiesByUniversities(
-  universities: string[]
-): Promise<string[]> {
-  let allFaculties: string[] = []
-
-  const facultiesArrays = await Promise.all(
-    universities.map((university) => getFacultiesByUniversity(university))
-  )
-
-  allFaculties = facultiesArrays.flat()
-
-  return [...new Set(allFaculties)].sort()
-}
-
-export async function getFacultiesByUniversity(
-  university: string
-): Promise<string[]> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from("universities")
-    .select("*")
-    .eq("name", university)
-    .single()
-
-  if (error) {
-    console.error(error)
-    return []
-  }
-  return Object.keys(data.university)
-}
-
-export async function getDepartmentByFaculties(
-  universities: string[],
-  faculties: string[]
-): Promise<string[]> {
-  const allDepartments = await universities.reduce(
-    async (uniAccPromise, university) => {
-      const uniAcc = await uniAccPromise
-
-      const facultyResults = await faculties.reduce(
-        async (facAccPromise, faculty) => {
-          const facAcc = await facAccPromise
-          const depts = await getDepartmentByFaculty(university, faculty)
-          return [...facAcc, ...depts]
-        },
-        Promise.resolve<string[]>([])
-      )
-
-      return [...uniAcc, ...facultyResults]
-    },
-    Promise.resolve<string[]>([])
-  )
-
-  const uniqueDepartments = [...new Set(allDepartments)]
-
-  uniqueDepartments.sort()
-
-  return uniqueDepartments
-}
-
-export async function getDepartmentByFaculty(
-  university: string,
-  faculty: string
-): Promise<string[]> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from("universities")
-    .select("*")
-    .eq("name", university)
-    .single()
-
-  if (error || !data) {
-    console.error(error || "No data returned")
-    return []
-  }
-
-  if (!data.university) {
-    console.error(`University data not found for ${university}`)
-    return []
-  }
-
-  if (!data.university[faculty]) {
-    console.error(`Faculty ${faculty} not found for ${university}`)
-    return []
-  }
-
-  if (
-    typeof data.university[faculty] === "string" ||
-    data.university[faculty] === null ||
-    typeof data.university[faculty] !== "object"
-  ) {
-    return []
-  }
-
-  try {
-    return Object.keys(data.university[faculty])
-  } catch (err) {
-    console.error(
-      `Error getting departments for ${university}, ${faculty}:`,
-      err
-    )
-    return []
+    const professors = (data as any[]).map((row) => ({
+      id: row.id,
+      name: row.name,
+      university: row.university,
+      faculty: row.faculty,
+      department: row.department,
+      website: row.website,
+      research_interests: row.research_interests,
+      similarity: row.similarity,
+      university_logo: row.university_logo,
+      email: row.email,
+    })) as any[]
+    return {
+      professors,
+      totalCount,
+      currentPage: page,
+      totalPages,
+      error: null,
+    }
+  } catch (err: any) {
+    console.error("Error in searchProfessors:", err)
+    return {
+      professors: [],
+      totalCount: 0,
+      currentPage: page,
+      totalPages: 0,
+      error: err.message ?? "Unknown error",
+    }
   }
 }
