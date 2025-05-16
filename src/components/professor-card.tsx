@@ -12,6 +12,7 @@ import {
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { toast } from "sonner"
 import Link from "next/link"
 
 export interface ProfessorCardProps {
@@ -40,6 +41,7 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
+    toast("Copied email to clipboard.")
   }
 
   const initialDisplayCount = 6

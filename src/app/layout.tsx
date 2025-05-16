@@ -4,6 +4,8 @@ import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/react"
 import Link from "next/link"
 import Image from "next/image"
+import { Toaster } from "@/components/ui/sonner"
+
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
@@ -51,7 +53,6 @@ export default function RootLayout({
                   height={60}
                   className="h-full w-full object-cover rounded-full"
                 />
-                {/* <GraduationCap className="h-6 w-6 text-white" /> */}
               </div>
               <div className="flex flex-col">
                 <span className="text-lg font-bold leading-none text-white">
@@ -65,6 +66,7 @@ export default function RootLayout({
           </div>
         </header>
         {children}
+        <Toaster />
         <Analytics />
       </body>
     </html>
