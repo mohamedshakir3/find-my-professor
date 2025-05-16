@@ -300,7 +300,7 @@ function uniqueItemsByObject(items: DBProf[]): DBProf[] {
 
   for (const item of items) {
     const prev = seen.get(item.id)
-    if (!prev || item.similarity < prev.similarity) {
+    if (!prev || item.similarity > prev.similarity) {
       seen.set(item.id, item)
     }
   }
@@ -359,6 +359,8 @@ export const getProfessors = async (
         ...directMatches,
         ...semanticMatches,
       ])
+
+      allMatches.forEach((p) => console.log(p.similarity))
 
       const total = allMatches.length
       const paged = allMatches.slice(offset, offset + limit)
