@@ -14,7 +14,7 @@ export async function SuspendedProfessorResults({
 	departments,
 	onResetFilters,
 }: {
-	query?: string
+	query: string
 	page?: number
 	universities?: string[]
 	faculties?: string[]

@@ -4,7 +4,6 @@ import { createClient } from "@/utils/supabase/server"
 import { generateEmbedding } from "./ai-actions"
 import { cosineDistance, desc, getTableColumns, gt, or, sql } from "drizzle-orm"
 import { professors, DBProf } from "@/lib/schema"
-import { db } from "@/lib/db"
 
 const { embedding: _, ...rest } = getTableColumns(professors)
 const profsWithoutEmbedding = {
@@ -306,31 +305,55 @@ function uniqueItemsByObject(items: DBProf[]): DBProf[] {
 }
 
 export const getProfessors = async (
-	query?: string,
+	query: string,
 	page: number = 1,
 	universities?: string[],
 	faculties?: string[],
 	departments?: string[]
 ): Promise<PaginatedResult<DBProf>> => {
 	const pageSize = 20
+	const supabase = await createClient()
 	try {
 		const currentPage = Math.max(1, page)
 		const limit = Math.max(1, pageSize)
 		const offset = (currentPage - 1) * limit
 
-		if (!query || query.length < 3) {
-			const [allProfs, [{ count }]] = await Promise.all([
-				db
-					.select(profsWithoutEmbedding)
-					.from(professors)
-					.limit(limit)
-					.offset(offset),
-				db.select({ count: sql<number>`COUNT(*)` }).from(professors),
-			])
+		if (
+			query.length < 3 &&
+			!universities?.length &&
+			!faculties?.length &&
+			!departments?.length
+		) {
+			const { data, count, error } = await supabase
+				.from("professors")
+				.select("*", { count: "exact" })
+				.range(offset, offset + limit - 1)
+				.order("id", { ascending: true })
+
+			if (error) throw new Error(error.message)
 
 			return {
-				professors: allProfs.map((p) => ({ ...p, similarity: 0 })),
-				total: count,
+				professors: data?.map((p) => ({ ...p, similarity: 0 })) ?? [],
+				total: count || 0,
+				page: currentPage,
+				pageSize: limit,
+			}
+		} else if (
+			query.length < 3 &&
+			(universities?.length || faculties?.length || departments?.length)
+		) {
+			const directMatches = await findProfessorsByQuery(
+				query,
+				universities,
+				faculties,
+				departments
+			)
+			const total = directMatches.length
+			const paged = directMatches.slice(offset, offset + limit)
+
+			return {
+				professors: paged,
+				total,
 				page: currentPage,
 				pageSize: limit,
 			}

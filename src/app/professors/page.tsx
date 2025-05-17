@@ -23,6 +23,7 @@ export default async function ProfessorsPage({
 	faculties = typeof faculties == "string" ? [faculties] : faculties
 	departments = typeof departments == "string" ? [departments] : departments
 
+	q = q ?? ""
 	const {
 		professors: profs,
 		total,
