@@ -320,26 +320,6 @@ export const getProfessors = async (
 
 		if (
 			query.length < 3 &&
-			!universities?.length &&
-			!faculties?.length &&
-			!departments?.length
-		) {
-			const { data, count, error } = await supabase
-				.from("professors")
-				.select("*", { count: "exact" })
-				.range(offset, offset + limit - 1)
-				.order("id", { ascending: true })
-
-			if (error) throw new Error(error.message)
-
-			return {
-				professors: data?.map((p) => ({ ...p, similarity: 0 })) ?? [],
-				total: count || 0,
-				page: currentPage,
-				pageSize: limit,
-			}
-		} else if (
-			query.length < 3 &&
 			(universities?.length || faculties?.length || departments?.length)
 		) {
 			const directMatches = await findProfessorsByQuery(
@@ -357,7 +337,7 @@ export const getProfessors = async (
 				page: currentPage,
 				pageSize: limit,
 			}
-		} else {
+		} else if (query.length > 3) {
 			const directMatches = await findProfessorsByQuery(
 				query,
 				universities,
@@ -382,6 +362,21 @@ export const getProfessors = async (
 			return {
 				professors: paged,
 				total,
+				page: currentPage,
+				pageSize: limit,
+			}
+		} else {
+			const { data, count, error } = await supabase
+				.from("professors")
+				.select("*", { count: "exact" })
+				.range(offset, offset + limit - 1)
+				.order("id", { ascending: true })
+
+			if (error) throw new Error(error.message)
+
+			return {
+				professors: data?.map((p) => ({ ...p, similarity: 0 })) ?? [],
+				total: count || 0,
 				page: currentPage,
 				pageSize: limit,
 			}
