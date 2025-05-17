@@ -47,7 +47,7 @@ export function SearchBox({
 			startTransition(() => {
 				router.push(`${pathname}?${params.toString()}`)
 			})
-	}, 300)
+	}, 500)
 
 	const resetQuery = () => {
 		setInputValue("")
