@@ -14,6 +14,11 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import Link from "next/link"
+import {
+	HoverCard,
+	HoverCardContent,
+	HoverCardTrigger,
+} from "@/components/ui/hover-card"
 
 export interface ProfessorCardProps {
 	professor: {
@@ -27,6 +32,7 @@ export interface ProfessorCardProps {
 		university?: string
 		university_logo: string
 		research_interests: string[]
+		ranking: string
 	}
 }
 
@@ -56,7 +62,7 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
 			key={professor.id}
 			className="flex flex-col overflow-hidden bg-white rounded-lg border hover:shadow-md transition-shadow"
 		>
-			<div className="bg-[#31404f] p-4 text-white rounded-t-lg">
+			<div className="bg-[#31404f] p-4 text-white rounded-t-lg relative">
 				<div className="flex items-start gap-3">
 					<div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-white flex items-center justify-center p-1">
 						<Image
@@ -73,6 +79,29 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
 						<p className="text-xs text-white/70">{professor.department}</p>
 					</div>
 				</div>
+				<HoverCard>
+					<HoverCardTrigger asChild>
+						{professor.ranking && (
+							<div className="absolute top-3 right-4 bg-black/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+								<div className="text-center">
+									<div className="font-medium text-white">
+										{professor.ranking}
+									</div>
+									<div className="text-xs text-white/80">QS Rank</div>
+								</div>
+							</div>
+						)}
+					</HoverCardTrigger>
+					<HoverCardContent className="w-80">
+						<div className="flex justify-between space-x-4">
+							<div className="space-y-1">
+								<p className="text-sm">
+									QS World University Rankings by Subject 2025
+								</p>
+							</div>
+						</div>
+					</HoverCardContent>
+				</HoverCard>
 			</div>
 			<div className="flex-grow p-4">
 				<div className="flex flex-wrap gap-2">
