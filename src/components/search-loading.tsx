@@ -36,7 +36,7 @@ export function SearchLoading() {
 
 					{/* Results Skeleton */}
 					<div className="flex-1">
-						<div className="grid gap-6 md:grid-cols-2">
+						<div className="grid gap-6 md:grid-cols-1">
 							{[1, 2, 3, 4].map((i) => (
 								<div key={i} className="bg-white rounded-lg border p-4">
 									<div className="flex items-start gap-3 mb-4">

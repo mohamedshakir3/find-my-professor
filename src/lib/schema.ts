@@ -1,4 +1,11 @@
-import { pgTable, serial, text, vector, index } from "drizzle-orm/pg-core"
+import {
+	pgTable,
+	serial,
+	text,
+	vector,
+	index,
+	integer,
+} from "drizzle-orm/pg-core"
 import { z } from "zod"
 export const professors = pgTable(
 	"professors",
@@ -12,6 +19,8 @@ export const professors = pgTable(
 		name: text(),
 		university_logo: text(),
 		ranking: text(),
+		google_scholar: text(),
+		citations: integer(),
 		embedding: vector("embedding", { dimensions: 1024 }),
 	},
 	(table) => ({
@@ -33,6 +42,8 @@ export const dbProfSchema = z.object({
 	university_logo: z.string().nullable(),
 	embedding: z.array(z.number()).nullable(),
 	rankings: z.string().nullable(),
+	google_scholar: z.string().nullable(),
+	citations: z.number(),
 	similarity: z.number(),
 })
 
