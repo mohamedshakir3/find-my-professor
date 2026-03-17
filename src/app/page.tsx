@@ -1,39 +1,45 @@
-"use client"
-
-import type React from "react"
-
-import { useState } from "react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { Loader2, Search } from "lucide-react"
 import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
+import { HeroSearch } from "@/components/hero-search"
+import { createClient } from "@/utils/supabase/server"
+import { universities } from "@/data/universities"
+import { GraduationCap, University } from "lucide-react"
 
-export default function Home() {
-  const router = useRouter()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+async function getStats() {
+  const supabase = await createClient()
+  const { count } = await supabase
+    .from("professors")
+    .select("*", { count: "exact", head: true })
+  return { professorCount: count ?? 0, universityCount: universities.length }
+}
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      setIsLoading(true)
-      router.push(`/professors?q=${searchQuery}`)
-    }
-  }
+export default async function Home() {
+  const { professorCount, universityCount } = await getStats()
 
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
-      <section className="relative bg-[#31404f] px-4 pb-24 pt-12 text-white md:px-6 md:pb-32 md:pt-16">
+      <section className="relative bg-[#31404f] px-4 pb-28 pt-12 text-white md:px-6 md:pb-36 md:pt-16">
         <div className="mx-auto max-w-3xl px-4">
           <div className="flex flex-col items-center md:flex-row md:items-center md:gap-6">
             <div className="mb-8 max-w-xl text-center md:mb-0 md:text-left md:flex-1">
-              <h1 className="mb-4 text-3xl font-bold md:text-4xl lg:text-5xl">
+              <h1 className="mb-3 text-3xl font-bold md:text-4xl lg:text-5xl">
                 Find a professor and connect with their expertise!
               </h1>
+              <p className="text-white/70 text-sm md:text-base">
+                Search across Canadian universities by name, research interest, or department.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2 justify-center md:justify-start">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#fdecea] px-3 py-1 text-xs font-medium text-[#e35535]">
+                  <GraduationCap className="h-3.5 w-3.5" />
+                  {professorCount.toLocaleString()}+ Professors
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#fdecea] px-3 py-1 text-xs font-medium text-[#e35535]">
+                  <University className="h-3.5 w-3.5" />
+                  {universityCount} Universities
+                </span>
+              </div>
             </div>
             <div className="hidden md:block md:flex-shrink-0">
               <Image
@@ -49,40 +55,12 @@ export default function Home() {
 
         {/* Search Bar */}
         <div className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-1/2 w-full max-w-3xl px-4">
-          <form
-            onSubmit={handleSearch}
-            className="flex w-full items-center gap-2 rounded-full bg-white p-2 shadow-lg"
-          >
-            <div className="flex w-full items-center gap-2 pl-4">
-              <Search className="h-5 w-5 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search for a professor by research interests, university, etc."
-                value={searchQuery}
-                className="flex-1 border-0 bg-transparent text-gray-900 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                onChange={(e) => setSearchQuery(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-            <Button
-              type="submit"
-              className="rounded-full bg-[#31404e] hover:bg-[#2b3a44]"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                </>
-              ) : (
-                "SEARCH"
-              )}
-            </Button>
-          </form>
+          <HeroSearch />
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="mt-24 px-4 py-12 md:mt-32 md:py-16">
+      <section className="mt-16 px-4 py-12 md:mt-20 md:py-16">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center">
             <h2 className="text-2xl font-semibold md:text-3xl">
