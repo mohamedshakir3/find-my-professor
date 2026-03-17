@@ -18,7 +18,6 @@ export function SearchBox({
 }) {
 	const { startTransition } = useSharedTransition()
 	const inputRef = useRef<HTMLInputElement>(null)
-	const [isValid, setIsValid] = useState(true)
 	const [inputValue, setInputValue] = useState(query || "")
 
 	const searchParams = useSearchParams()
@@ -62,54 +61,33 @@ export function SearchBox({
 	}
 
 	return (
-		<>
-			<div className="relative flex items-center space-x-2">
-				<div className="relative w-full flex items-center">
-					<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 z-10" />
-					<Input
-						disabled={disabled}
-						ref={inputRef}
-						value={inputValue}
-						minLength={3}
-						onChange={(e) => {
-							const newValue = e.target.value
-							setInputValue(newValue)
-
-							if (newValue.length > 2) {
-								setIsValid(true)
-								handleSearch(newValue)
-							} else if (newValue.length === 0) {
-								handleSearch(newValue)
-								setIsValid(false)
-							} else {
-								setIsValid(false)
-							}
-						}}
-						className={
-							"text-base w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:ring-blue-500"
-						}
-						placeholder="Search professors by name, research interest, university..."
-					/>
-					{inputValue.length > 0 ? (
-						<Button
-							className="absolute right-2 text-gray-400 rounded-full h-8 w-8"
-							variant="ghost"
-							type="reset"
-							size={"icon"}
-							onClick={resetQuery}
-						>
-							<X height="20" width="20" />
-						</Button>
-					) : null}
-				</div>
-			</div>
-			{!isValid ? (
-				<span className="text-xs pt-2 text-destructive">
-					Query must be 3 characters or longer
-				</span>
-			) : (
-				<span className="h-6" />
+		<div className="relative w-full flex items-center">
+			<Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 z-10" />
+			<Input
+				disabled={disabled}
+				ref={inputRef}
+				value={inputValue}
+				onChange={(e) => {
+					const newValue = e.target.value
+					setInputValue(newValue)
+					if (newValue.length === 0 || newValue.length >= 3) {
+						handleSearch(newValue)
+					}
+				}}
+				className="h-12 w-full pl-11 pr-10 rounded-xl border border-gray-200 bg-white text-sm shadow-sm focus-visible:ring-2 focus-visible:ring-[#31404f] focus-visible:border-transparent"
+				placeholder="Search by name, research interest, university..."
+			/>
+			{inputValue.length > 0 && (
+				<Button
+					className="absolute right-2 text-gray-400 rounded-full h-8 w-8"
+					variant="ghost"
+					type="reset"
+					size="icon"
+					onClick={resetQuery}
+				>
+					<X className="h-4 w-4" />
+				</Button>
 			)}
-		</>
+		</div>
 	)
 }

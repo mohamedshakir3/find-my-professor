@@ -20,7 +20,6 @@ export interface ProfessorCardProps {
 		email: string
 		faculty: string
 		department: string
-		interests: string[]
 		website: string
 		university?: string
 		university_logo: string
@@ -32,189 +31,133 @@ export interface ProfessorCardProps {
 }
 
 export function ProfessorCard({ professor }: ProfessorCardProps) {
-	const [copied, setCopied] = useState<boolean>(false)
+	const [copied, setCopied] = useState(false)
 
 	const copyToClipboard = async () => {
-		const textToCopy = professor.email
-		if (textToCopy) {
-			await navigator.clipboard.writeText(textToCopy)
+		if (professor.email) {
+			await navigator.clipboard.writeText(professor.email)
 			setCopied(true)
 			setTimeout(() => setCopied(false), 2000)
+			toast(`Copied ${professor.email} to clipboard`)
 		}
-		toast(`Copied ${textToCopy} to clipboard`)
 	}
 
-	// Ensure research_interests is an array
 	const researchInterests = professor.research_interests || []
+	const formattedCitations = professor.cited_by?.toLocaleString() || null
 
-	// Format citations with commas for thousands
-	const formattedCitations = professor.cited_by?.toLocaleString() || "N/A"
-	console.log(professor)
 	return (
-		<div
-			key={professor.id}
-			className="flex flex-col sm:flex-row overflow-hidden bg-white rounded-lg border hover:shadow-md transition-shadow"
-		>
-			{/* Left side - dark blue section */}
-			<div className="bg-[#31404f] p-4 text-white rounded-t-lg sm:rounded-t-none sm:rounded-l-lg relative sm:w-64 flex flex-col">
-				{/* University logo and professor info - left aligned */}
-				<div className="flex flex-col items-start">
-					<div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-white flex items-center justify-center p-1 mb-3">
-						<Image
-							src={professor.university_logo || "/placeholder.png"}
-							alt={`${professor.name}'s university logo`}
-							width={64}
-							height={64}
-							className="object-cover"
-						/>
-					</div>
-
-					<div className="text-left">
-						<div className="flex items-center gap-2">
-							<h2 className="font-semibold">{professor.name}</h2>
-							{professor.website && (
-								<Link
-									href={professor.website}
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									<ExternalLink
-										className="h-3.5 w-3.5 text-white/70 hover:text-white transition-colors"
-										aria-label="Personal website"
-									/>
-								</Link>
-							)}
-						</div>
-						<p className="text-sm text-white/80">{professor.faculty}</p>
-						<p className="text-xs text-white/70">{professor.department}</p>
-					</div>
+		<div className="flex flex-col bg-white rounded-lg border border-l-4 border-l-[#31404f] hover:shadow-md transition-shadow overflow-hidden">
+			{/* Header */}
+			<div className="flex items-start gap-3 p-4">
+				<div className="shrink-0 h-10 w-10 rounded-md bg-gray-50 border flex items-center justify-center overflow-hidden">
+					<Image
+						src={professor.university_logo || "/placeholder.png"}
+						alt={`${professor.university} logo`}
+						width={40}
+						height={40}
+						className="object-contain"
+					/>
 				</div>
 
-				{/* Metrics section - QS Rank and Citations */}
-				<div className="mt-4 flex flex-col gap-2">
-					{/* QS Ranking */}
-					<HoverCard>
-						<HoverCardTrigger asChild>
-							{professor.ranking && (
-								<div className="bg-black/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-									<div className="text-left flex items-center">
-										<div className="font-medium text-white">
-											{professor.ranking}
-										</div>
-										<div className="text-xs text-white/80 ml-2">QS Rank</div>
-									</div>
-								</div>
-							)}
-						</HoverCardTrigger>
-						<HoverCardContent className="w-80">
-							<div className="flex justify-between space-x-4">
-								<div className="space-y-1">
-									<p className="text-sm">
-										QS World University Rankings by Subject 2025
-									</p>
-								</div>
-							</div>
-						</HoverCardContent>
-					</HoverCard>
+				<div className="flex-1 min-w-0">
+					<div className="flex items-center gap-1.5 flex-wrap">
+						<h2 className="font-semibold text-gray-900 leading-tight">
+							{professor.name}
+						</h2>
+						{professor.website && (
+							<Link href={professor.website} target="_blank" rel="noopener noreferrer">
+								<ExternalLink className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600 transition-colors" />
+							</Link>
+						)}
+					</div>
+					<p className="text-sm text-gray-500 truncate">
+						{[professor.faculty, professor.department].filter(Boolean).join(" · ")}
+					</p>
+				</div>
 
-					{/* Citations */}
-					<HoverCard>
-						<HoverCardTrigger asChild>
-							<div className="bg-black/20 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-								<div className="text-left flex items-center">
-									<BookOpen className="h-3.5 w-3.5 mr-2 text-white/70" />
-									<div className="font-medium text-white">
-										{formattedCitations}
-									</div>
-									<div className="text-xs text-white/80 ml-2">Citations</div>
-								</div>
-							</div>
-						</HoverCardTrigger>
-						<HoverCardContent className="w-80">
-							<div className="flex justify-between space-x-4">
-								<div className="space-y-1">
-									<p className="text-sm">
-										Total citations according to Google Scholar
-									</p>
-								</div>
-							</div>
-						</HoverCardContent>
-					</HoverCard>
+				{/* Metrics */}
+				<div className="shrink-0 flex items-center gap-2">
+					{professor.ranking && (
+						<HoverCard>
+							<HoverCardTrigger asChild>
+								<span className="inline-flex items-center gap-1 text-xs font-medium bg-[#31404f]/10 text-[#31404f] px-2 py-1 rounded-md cursor-default select-none">
+									{professor.ranking}
+									<span className="font-normal opacity-60">QS</span>
+								</span>
+							</HoverCardTrigger>
+							<HoverCardContent className="w-64 text-sm">
+								QS World University Rankings by Subject 2025
+							</HoverCardContent>
+						</HoverCard>
+					)}
+					{formattedCitations && (
+						<HoverCard>
+							<HoverCardTrigger asChild>
+								<span className="inline-flex items-center gap-1 text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded-md cursor-default select-none">
+									<BookOpen className="h-3 w-3" />
+									{formattedCitations}
+								</span>
+							</HoverCardTrigger>
+							<HoverCardContent className="w-64 text-sm">
+								Total citations according to Google Scholar
+							</HoverCardContent>
+						</HoverCard>
+					)}
 				</div>
 			</div>
 
-			{/* Right side - content */}
-			<div className="flex-1 flex flex-col">
-				{/* Research interests - vertically scrollable when overflowing */}
-				<div className="flex-grow p-4">
-					{researchInterests.length > 0 ? (
-						<div className="max-h-[150px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-							<div className="flex flex-wrap gap-2">
-								{researchInterests.map((interest: any, index: number) => (
-									<Badge
-										key={index}
-										variant="outline"
-										className="rounded-md bg-[#fdecea] text-[#e35535] hover:bg-[#f8d3cf] border-[#e35535]/20 text-xs whitespace-normal break-words max-w-full"
-									>
-										{interest}
-									</Badge>
-								))}
-							</div>
-						</div>
-					) : (
-						<p className="text-sm text-gray-500 italic">
-							No research interests available
-						</p>
-					)}
-				</div>
-
-				{/* Buttons */}
-				<div className="flex justify-between bg-gray-50 px-4 py-3 rounded-b-lg sm:rounded-bl-none">
-					{professor.email ? (
-						<div className="flex">
-							<div className="relative inline-flex rounded-md">
-								<Link href={`mailto:${professor.email}`}>
-									<Button
-										variant="outline"
-										size="sm"
-										className="gap-1 text-[#31404f] border-[#31404f]/30 hover:bg-[#e8f0ee] hover:text-[#3a5a52] rounded-r-none pr-8"
-									>
-										<Mail size={14} />
-										<span className="hidden sm:inline">Contact</span>
-									</Button>
-								</Link>
-								<div className="absolute right-0 inset-y-0 flex items-center">
-									<span className="h-4/5 w-px bg-[#31404f]/30"></span>
-								</div>
-								<button
-									onClick={copyToClipboard}
-									className="rounded-l-none rounded-r-md border border-[#31404f]/30 border-l-0 px-2 inline-flex items-center justify-center bg-white text-[#31404f] hover:bg-[#e8f0ee] hover:text-[#3a5a52] focus:z-10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#31404f]"
-									aria-label="Copy email"
-								>
-									{copied ? <Check size={14} /> : <Copy size={14} />}
-								</button>
-							</div>
-						</div>
-					) : (
-						<div></div>
-					)}
-					{professor.google_scholar && (
-						<Link
-							href={professor.google_scholar}
-							target="_blank"
-							rel="noopener noreferrer"
+			{/* Research interests */}
+			{researchInterests.length > 0 && (
+				<div className="px-4 pb-3 flex flex-wrap gap-1.5">
+					{researchInterests.map((interest, i) => (
+						<Badge
+							key={i}
+							variant="outline"
+							className="rounded-md bg-[#fdecea] text-[#e35535] border-[#e35535]/20 text-xs font-normal"
 						>
+							{interest}
+						</Badge>
+					))}
+				</div>
+			)}
+
+			{/* Actions */}
+			<div className="flex items-center justify-between px-4 py-2.5 bg-gray-50 border-t mt-auto">
+				{professor.email ? (
+					<div className="inline-flex rounded-md">
+						<Link href={`mailto:${professor.email}`}>
 							<Button
 								variant="outline"
 								size="sm"
-								className="gap-1 text-[#31404f] border-[#31404f]/30 hover:bg-[#e8f0ee] hover:text-[#3a5a52]"
+								className="gap-1.5 text-[#31404f] border-[#31404f]/30 hover:bg-[#e8f0ee] rounded-r-none pr-7 border-r-0"
 							>
-								<BookOpen className="h-4 w-4" />
-								Google Scholar
+								<Mail className="h-3.5 w-3.5" />
+								<span className="hidden sm:inline">Contact</span>
 							</Button>
 						</Link>
-					)}
-				</div>
+						<button
+							onClick={copyToClipboard}
+							className="border border-[#31404f]/30 rounded-r-md px-2 inline-flex items-center bg-white text-[#31404f] hover:bg-[#e8f0ee] transition-colors"
+							aria-label="Copy email"
+						>
+							{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+						</button>
+					</div>
+				) : (
+					<div />
+				)}
+				{professor.google_scholar && (
+					<Link href={professor.google_scholar} target="_blank" rel="noopener noreferrer">
+						<Button
+							variant="outline"
+							size="sm"
+							className="gap-1.5 text-[#31404f] border-[#31404f]/30 hover:bg-[#e8f0ee]"
+						>
+							<BookOpen className="h-3.5 w-3.5" />
+							<span className="hidden sm:inline">Google Scholar</span>
+						</Button>
+					</Link>
+				)}
 			</div>
 		</div>
 	)

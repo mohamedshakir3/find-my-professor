@@ -1,216 +1,144 @@
 "use client"
 
-import { Suspense, useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
-import { SlidersHorizontal, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-	Sheet,
-	SheetTitle,
-	SheetContent,
-	SheetTrigger,
-} from "@/components/ui/sheet"
-import { universities, faculties, departments } from "@/data/universities"
+import { useState } from "react"
 import { SearchBox } from "@/components/search-bar"
 import { ProfessorResults } from "@/components/professor-results"
-import { FilterPanel } from "@/components/filter-panel"
-import { useRouter } from "next/navigation"
+import { FilterBar, SortOption } from "@/components/filter-bar"
+import { Button } from "@/components/ui/button"
+import { X } from "lucide-react"
+import { universities, faculties, departments } from "@/data/universities"
 import Image from "next/image"
-import { ProfessorResultsLoading } from "./professor-results-loading"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useSharedTransition } from "@/hooks/use-shared-transition"
+import { DBProf } from "@/lib/schema"
 
 export default function SearchInterface({
-	professors,
-	query,
+  professors,
+  query,
+  sort,
 }: {
-	professors: any[]
-	query?: string
+  professors: DBProf[]
+  query?: string
+  sort: SortOption
 }) {
-	const router = useRouter()
-	const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
-	const [isLoading, setIsLoading] = useState(false)
+  const { startTransition } = useSharedTransition()
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
-	const [selectedDepartments, setSelectedDepartments] = useState<string[]>([])
-	const [selectedFaculties, setSelectedFaculties] = useState<string[]>([])
-	const [selectedUniversities, setSelectedUniversities] = useState<string[]>([])
-	const [universitySearchQuery, setUniversitySearchQuery] = useState("")
-	const [facultySearchQuery, setFacultySearchQuery] = useState("")
-	const [departmentSearchQuery, setDepartmentSearchQuery] = useState("")
+  const [selectedUniversities, setSelectedUniversities] = useState<string[]>(
+    () => searchParams.getAll("university")
+  )
+  const [selectedFaculties, setSelectedFaculties] = useState<string[]>(() =>
+    searchParams.getAll("faculty")
+  )
+  const [selectedDepartments, setSelectedDepartments] = useState<string[]>(() =>
+    searchParams.getAll("department")
+  )
 
-	const filteredUniversities = universities.filter((university) =>
-		university.toLowerCase().includes(universitySearchQuery.toLowerCase())
-	)
+  const updateParam = (
+    type: "university" | "faculty" | "department",
+    value: string,
+    isAdd: boolean
+  ) => {
+    const params = new URLSearchParams(searchParams.toString())
+    const current = params.getAll(type)
+    params.delete(type)
+    const next = isAdd ? [...current, value] : current.filter((v) => v !== value)
+    next.forEach((v) => params.append(type, v))
+    params.delete("page")
+    startTransition?.(() => router.push(`${pathname}?${params.toString()}`))
+  }
 
-	const filteredFaculties = faculties.filter((faculty) =>
-		faculty.toLowerCase().includes(facultySearchQuery.toLowerCase())
-	)
+  const toggle = (
+    type: "university" | "faculty" | "department",
+    value: string,
+    selected: string[],
+    setSelected: (v: string[]) => void
+  ) => {
+    const isAdd = !selected.includes(value)
+    setSelected(isAdd ? [...selected, value] : selected.filter((v) => v !== value))
+    updateParam(type, value, isAdd)
+  }
 
-	const filteredDepartments = departments.filter((department) =>
-		department.toLowerCase().includes(departmentSearchQuery.toLowerCase())
-	)
+  const handleSortChange = (value: SortOption) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value === "relevance") {
+      params.delete("sort")
+    } else {
+      params.set("sort", value)
+    }
+    params.delete("page")
+    startTransition?.(() => router.push(`${pathname}?${params.toString()}`))
+  }
 
-	useEffect(() => {
-		const params = new URLSearchParams()
-		setIsLoading(true)
+  const resetFilters = () => {
+    setSelectedUniversities([])
+    setSelectedFaculties([])
+    setSelectedDepartments([])
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("university")
+    params.delete("faculty")
+    params.delete("department")
+    params.delete("page")
+    startTransition?.(() => router.push(`${pathname}?${params.toString()}`))
+  }
 
-		if (query) params.set("q", query)
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <main className="mx-auto max-w-5xl px-4 py-6 space-y-4">
+        <SearchBox query={query} />
 
-		selectedUniversities.forEach((u) => params.append("universities", u))
-		selectedFaculties.forEach((f) => params.append("faculties", f))
-		selectedDepartments.forEach((d) => params.append("departments", d))
+        <FilterBar
+          universities={universities}
+          faculties={faculties}
+          departments={departments}
+          selectedUniversities={selectedUniversities}
+          selectedFaculties={selectedFaculties}
+          selectedDepartments={selectedDepartments}
+          onToggleUniversity={(v) =>
+            toggle("university", v, selectedUniversities, setSelectedUniversities)
+          }
+          onToggleFaculty={(v) =>
+            toggle("faculty", v, selectedFaculties, setSelectedFaculties)
+          }
+          onToggleDepartment={(v) =>
+            toggle("department", v, selectedDepartments, setSelectedDepartments)
+          }
+          sort={sort}
+          onSortChange={handleSortChange}
+          onReset={resetFilters}
+        />
 
-		router.push(`?${params.toString()}`, { scroll: false })
+        <p className="text-sm text-muted-foreground">
+          {professors.length} professor{professors.length !== 1 ? "s" : ""}
+          {query && <span> for &ldquo;{query}&rdquo;</span>}
+        </p>
 
-		// Add a small delay to prevent flickering
-		const timeout = setTimeout(() => {
-			setIsLoading(false)
-		}, 300)
-
-		return () => clearTimeout(timeout)
-	}, [selectedUniversities, selectedFaculties, selectedDepartments, query])
-
-	const resetFilters = () => {
-		setSelectedDepartments([])
-		setSelectedFaculties([])
-		setSelectedUniversities([])
-		setUniversitySearchQuery("")
-		setFacultySearchQuery("")
-		setDepartmentSearchQuery("")
-	}
-
-	return (
-		<div className="min-h-screen bg-gray-50">
-			<main className="mx-auto max-w-7xl px-4 py-6">
-				<div className="mb-6 flex items-center gap-4">
-					<div className="relative flex-1">
-						<SearchBox query={query} />
-					</div>
-
-					<Sheet open={isMobileFilterOpen} onOpenChange={setIsMobileFilterOpen}>
-						<SheetTrigger asChild>
-							<Button
-								variant="outline"
-								className="md:hidden"
-								onClick={() => setIsMobileFilterOpen(true)}
-							>
-								<SlidersHorizontal className="h-4 w-4 mr-2" />
-								Filters
-							</Button>
-						</SheetTrigger>
-						<SheetContent
-							side="right"
-							className="w-[80%] sm:w-[400px] p-2 overflow-y-auto"
-						>
-							<SheetTitle className="sr-only">Menu</SheetTitle>
-							<div className="pt-8">
-								<div className="flex items-center justify-between mb-2">
-									<h2 className="text-lg font-semibold">Filters</h2>
-									<Button variant="outline" size="sm" onClick={resetFilters}>
-										Reset
-									</Button>
-								</div>
-								<FilterPanel
-									departments={filteredDepartments}
-									universities={filteredUniversities}
-									faculties={filteredFaculties}
-									selectedDepartments={selectedDepartments}
-									setSelectedDepartments={setSelectedDepartments}
-									selectedFaculties={selectedFaculties}
-									setSelectedFaculties={setSelectedFaculties}
-									selectedUniversities={selectedUniversities}
-									setSelectedUniversities={setSelectedUniversities}
-									universitySearchQuery={universitySearchQuery}
-									setUniversitySearchQuery={setUniversitySearchQuery}
-									facultySearchQuery={facultySearchQuery}
-									setFacultySearchQuery={setFacultySearchQuery}
-									departmentSearchQuery={departmentSearchQuery}
-									setDepartmentSearchQuery={setDepartmentSearchQuery}
-								/>
-							</div>
-						</SheetContent>
-					</Sheet>
-				</div>
-
-				{/* Search results count */}
-				<div className="mb-4">
-					<p className="text-sm text-muted-foreground">
-						Showing {professors.length} professors
-						{query && <span> for "{query}"</span>}
-					</p>
-				</div>
-
-				<div className="flex flex-col md:flex-row gap-6">
-					{/* Desktop Sidebar */}
-					<div className="hidden md:block w-64 shrink-0">
-						<div className="bg-white rounded-lg border p-4 sticky top-4">
-							<div className="flex items-center justify-between mb-6">
-								<h2 className="text-lg font-semibold">Filters</h2>
-								<Button variant="outline" size="sm" onClick={resetFilters}>
-									Reset
-								</Button>
-							</div>
-
-							<FilterPanel
-								departments={filteredDepartments}
-								universities={filteredUniversities}
-								faculties={filteredFaculties}
-								selectedDepartments={selectedDepartments}
-								setSelectedDepartments={setSelectedDepartments}
-								selectedFaculties={selectedFaculties}
-								setSelectedFaculties={setSelectedFaculties}
-								selectedUniversities={selectedUniversities}
-								setSelectedUniversities={setSelectedUniversities}
-								universitySearchQuery={universitySearchQuery}
-								setUniversitySearchQuery={setUniversitySearchQuery}
-								facultySearchQuery={facultySearchQuery}
-								setFacultySearchQuery={setFacultySearchQuery}
-								departmentSearchQuery={departmentSearchQuery}
-								setDepartmentSearchQuery={setDepartmentSearchQuery}
-							/>
-						</div>
-					</div>
-
-					{/* Results */}
-					<div className="flex-1">
-						<Suspense fallback={<ProfessorResultsLoading />}>
-							{isLoading ? (
-								<ProfessorResultsLoading />
-							) : professors.length > 0 ? (
-								<ProfessorResults professors={professors} />
-							) : (
-								<div className="rounded-lg border bg-white p-8 text-center">
-									<div className="mx-auto max-w-md">
-										<Image
-											src="/sad-penguin.png"
-											alt="No results illustration"
-											width={200}
-											height={200}
-											className="mx-auto mb-6"
-										/>
-										<h2 className="text-2xl font-semibold mb-2">
-											No Results Found
-										</h2>
-										<p className="text-muted-foreground">
-											We couldn't find any professors matching your search
-											criteria.
-										</p>
-										<p className="mt-2 text-sm text-muted-foreground">
-											Try adjusting your filters or search terms.
-										</p>
-										<Button
-											variant="outline"
-											className="mt-4"
-											onClick={resetFilters}
-										>
-											<X className="h-4 w-4 mr-2" />
-											Clear Filters
-										</Button>
-									</div>
-								</div>
-							)}
-						</Suspense>
-					</div>
-				</div>
-			</main>
-		</div>
-	)
+        {professors.length > 0 ? (
+          <ProfessorResults professors={professors} />
+        ) : (
+          <div className="rounded-lg border bg-white p-8 text-center">
+            <div className="mx-auto max-w-sm">
+              <Image
+                src="/sad-penguin.png"
+                alt="No results"
+                width={160}
+                height={160}
+                className="mx-auto mb-6"
+              />
+              <h2 className="text-xl font-semibold mb-2">No Results Found</h2>
+              <p className="text-sm text-muted-foreground">
+                Try adjusting your filters or search terms.
+              </p>
+              <Button variant="outline" size="sm" className="mt-4" onClick={resetFilters}>
+                <X className="h-4 w-4 mr-2" />
+                Clear Filters
+              </Button>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  )
 }
