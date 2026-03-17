@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { Mail, ExternalLink, Check, Copy, BookOpen } from "lucide-react"
+import { ReportButton } from "@/components/report-button"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -146,18 +147,21 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
 				) : (
 					<div />
 				)}
-				{professor.google_scholar && (
-					<Link href={professor.google_scholar} target="_blank" rel="noopener noreferrer">
-						<Button
-							variant="outline"
-							size="sm"
-							className="gap-1.5 text-[#31404f] border-[#31404f]/30 hover:bg-[#e8f0ee]"
-						>
-							<BookOpen className="h-3.5 w-3.5" />
-							<span className="hidden sm:inline">Google Scholar</span>
-						</Button>
-					</Link>
-				)}
+				<div className="flex items-center gap-1.5">
+					{professor.google_scholar && (
+						<Link href={professor.google_scholar} target="_blank" rel="noopener noreferrer">
+							<Button
+								variant="outline"
+								size="sm"
+								className="gap-1.5 text-[#31404f] border-[#31404f]/30 hover:bg-[#e8f0ee]"
+							>
+								<BookOpen className="h-3.5 w-3.5" />
+								<span className="hidden sm:inline">Google Scholar</span>
+							</Button>
+						</Link>
+					)}
+					<ReportButton professorId={professor.id} professorName={professor.name} />
+				</div>
 			</div>
 		</div>
 	)
