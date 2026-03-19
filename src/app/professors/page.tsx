@@ -13,10 +13,11 @@ export default async function ProfessorsPage({
 		faculty?: string | string[]
 		department?: string | string[]
 		sort?: string
+		accepting?: string
 		page?: string
 	}>
 }) {
-	let { q, university, faculty, department, sort, page } = await searchParams
+	let { q, university, faculty, department, sort, accepting, page } = await searchParams
 
 	const currentPage = page ? parseInt(page) : 1
 	const universities = typeof university === "string" ? [university] : university
@@ -25,13 +26,14 @@ export default async function ProfessorsPage({
 	const sortBy = (["relevance", "citations_desc", "rank_asc"].includes(sort ?? "")
 		? sort
 		: "relevance") as SortBy
+	const acceptingStudents = accepting === "true" ? true : undefined
 
 	q = q ?? ""
 	const {
 		professors: profs,
 		total,
 		pageSize,
-	} = await getProfessors(q, currentPage, universities, faculties, departments, sortBy)
+	} = await getProfessors(q, currentPage, universities, faculties, departments, sortBy, acceptingStudents)
 
 	const numPages = Math.ceil(total / pageSize)
 

@@ -5,6 +5,7 @@ import {
 	vector,
 	index,
 	integer,
+	boolean,
 } from "drizzle-orm/pg-core"
 import { z } from "zod"
 export const professors = pgTable(
@@ -21,6 +22,7 @@ export const professors = pgTable(
 		ranking: text(),
 		google_scholar: text(),
 		citations: integer(),
+		accepting_students: boolean("accepting_students"),
 		embedding: vector("embedding", { dimensions: 1024 }),
 	},
 	(table) => ({
@@ -44,6 +46,7 @@ export const dbProfSchema = z.object({
 	rankings: z.string().nullable(),
 	google_scholar: z.string().nullable(),
 	citations: z.number(),
+	accepting_students: z.boolean().nullable(),
 	similarity: z.number(),
 })
 

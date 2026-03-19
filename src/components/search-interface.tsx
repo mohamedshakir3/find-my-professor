@@ -35,6 +35,9 @@ export default function SearchInterface({
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>(() =>
     searchParams.getAll("department")
   )
+  const [acceptingStudents, setAcceptingStudents] = useState(
+    () => searchParams.get("accepting") === "true"
+  )
 
   const updateParam = (
     type: "university" | "faculty" | "department",
@@ -61,6 +64,19 @@ export default function SearchInterface({
     updateParam(type, value, isAdd)
   }
 
+  const handleToggleAccepting = () => {
+    const next = !acceptingStudents
+    setAcceptingStudents(next)
+    const params = new URLSearchParams(searchParams.toString())
+    if (next) {
+      params.set("accepting", "true")
+    } else {
+      params.delete("accepting")
+    }
+    params.delete("page")
+    startTransition?.(() => router.push(`${pathname}?${params.toString()}`))
+  }
+
   const handleSortChange = (value: SortOption) => {
     const params = new URLSearchParams(searchParams.toString())
     if (value === "relevance") {
@@ -76,10 +92,12 @@ export default function SearchInterface({
     setSelectedUniversities([])
     setSelectedFaculties([])
     setSelectedDepartments([])
+    setAcceptingStudents(false)
     const params = new URLSearchParams(searchParams.toString())
     params.delete("university")
     params.delete("faculty")
     params.delete("department")
+    params.delete("accepting")
     params.delete("page")
     startTransition?.(() => router.push(`${pathname}?${params.toString()}`))
   }
@@ -105,6 +123,8 @@ export default function SearchInterface({
           onToggleDepartment={(v) =>
             toggle("department", v, selectedDepartments, setSelectedDepartments)
           }
+          acceptingStudents={acceptingStudents}
+          onToggleAccepting={handleToggleAccepting}
           sort={sort}
           onSortChange={handleSortChange}
           onReset={resetFilters}

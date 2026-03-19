@@ -19,7 +19,8 @@ export const getProfessors = async (
 	universities?: string[],
 	faculties?: string[],
 	departments?: string[],
-	sortBy: SortBy = "relevance"
+	sortBy: SortBy = "relevance",
+	acceptingStudents?: boolean
 ): Promise<PaginatedResult<DBProf>> => {
 	const pageSize = 20
 	const supabase = await createClient()
@@ -42,6 +43,7 @@ export const getProfessors = async (
 				sort_by: sortBy,
 				p_limit: limit,
 				p_offset: offset,
+				...(acceptingStudents != null && { p_accepting_students: acceptingStudents }),
 			})
 
 			if (error) throw new Error(error.message)
@@ -63,6 +65,7 @@ export const getProfessors = async (
 		if (universities?.length) dbQuery = dbQuery.in("university", universities)
 		if (faculties?.length) dbQuery = dbQuery.in("faculty", faculties)
 		if (departments?.length) dbQuery = dbQuery.in("department", departments)
+		if (acceptingStudents != null) dbQuery = dbQuery.eq("accepting_students", acceptingStudents)
 
 		if (sortBy === "citations_desc") {
 			dbQuery = dbQuery.order("cited_by", { ascending: false, nullsFirst: false })

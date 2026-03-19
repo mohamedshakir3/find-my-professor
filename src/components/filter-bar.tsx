@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronDown, X, Check, ArrowUpDown } from "lucide-react"
+import { ChevronDown, X, Check, ArrowUpDown, GraduationCap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -160,6 +160,8 @@ export interface FilterBarProps {
   onToggleUniversity: (v: string) => void
   onToggleFaculty: (v: string) => void
   onToggleDepartment: (v: string) => void
+  acceptingStudents: boolean
+  onToggleAccepting: () => void
   sort: SortOption
   onSortChange: (v: SortOption) => void
   onReset: () => void
@@ -175,12 +177,14 @@ export function FilterBar({
   onToggleUniversity,
   onToggleFaculty,
   onToggleDepartment,
+  acceptingStudents,
+  onToggleAccepting,
   sort,
   onSortChange,
   onReset,
 }: FilterBarProps) {
   const totalActive =
-    selectedUniversities.length + selectedFaculties.length + selectedDepartments.length
+    selectedUniversities.length + selectedFaculties.length + selectedDepartments.length + (acceptingStudents ? 1 : 0)
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
@@ -203,6 +207,18 @@ export function FilterBar({
           selected={selectedDepartments}
           onToggle={onToggleDepartment}
         />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onToggleAccepting}
+          className={cn(
+            "h-9 gap-1.5 border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50",
+            acceptingStudents && "border-[#31404f] bg-[#31404f] text-white hover:bg-[#3a5a52] hover:text-white"
+          )}
+        >
+          <GraduationCap className="h-3.5 w-3.5" />
+          Accepting Students
+        </Button>
       </div>
 
       <div className="flex items-center gap-2 sm:ml-auto">
