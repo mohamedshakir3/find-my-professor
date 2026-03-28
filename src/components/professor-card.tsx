@@ -34,7 +34,7 @@ export interface ProfessorCardProps {
     ranking: string
     google_scholar?: string
     cited_by?: number
-    accepting_students?: boolean | null
+    accepting_students?: string | null
   }
 }
 
@@ -101,7 +101,7 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
       {/* Metrics */}
       {(professor.ranking ||
         formattedCitations ||
-        professor.accepting_students) && (
+        professor.accepting_students === "Yes") && (
         <div className="px-4 pb-2 flex items-center gap-2">
           {professor.ranking && (
             <HoverCard>
@@ -129,7 +129,7 @@ export function ProfessorCard({ professor }: ProfessorCardProps) {
               </HoverCardContent>
             </HoverCard>
           )}
-          {professor.accepting_students && (
+          {professor.accepting_students === "Yes" && (
             <span className="inline-flex items-center gap-1 text-xs font-medium bg-green-50 text-green-700 px-2 py-1 rounded-md select-none">
               <GraduationCap className="h-3 w-3" />
               Accepting Students

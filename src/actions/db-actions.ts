@@ -101,12 +101,15 @@ export const getProfessors = async (
 				sort_by: sortBy,
 				p_limit: limit,
 				p_offset: offset,
-				...(acceptingStudents != null && { p_accepting_students: acceptingStudents }),
+				...(acceptingStudents && { p_accepting_students: "Yes" }),
 			})
 
 			if (error) throw new Error(error.message)
 
-			const results: (DBProf & { total_count: number })[] = data ?? []
+			const results = (data ?? []).map(({ research_interests_new, ...row }: any) => ({
+				...row,
+				research_interests: research_interests_new,
+			})) as (DBProf & { total_count: number })[]
 			return {
 				professors: results,
 				total: results[0]?.total_count ?? 0,
@@ -123,7 +126,7 @@ export const getProfessors = async (
 		if (universities?.length) dbQuery = dbQuery.in("university", universities)
 		if (faculties?.length) dbQuery = dbQuery.in("faculty", faculties)
 		if (departments?.length) dbQuery = dbQuery.in("department", departments)
-		if (acceptingStudents != null) dbQuery = dbQuery.eq("accepting_students", acceptingStudents)
+		if (acceptingStudents) dbQuery = dbQuery.eq("accepting_students", "Yes")
 
 		if (sortBy === "citations_desc") {
 			dbQuery = dbQuery.order("cited_by", { ascending: false, nullsFirst: false })
@@ -138,7 +141,11 @@ export const getProfessors = async (
 		if (error) throw new Error(error.message)
 
 		return {
-			professors: data?.map((p) => ({ ...p, similarity: 0 })) ?? [],
+			professors: data?.map(({ research_interests_new, embeddings_new, ...p }) => ({
+			...p,
+			research_interests: research_interests_new,
+			similarity: 0,
+		})) ?? [],
 			total: count || 0,
 			page: currentPage,
 			pageSize: limit,

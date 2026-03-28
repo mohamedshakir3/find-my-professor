@@ -16,14 +16,14 @@ export const professors = pgTable(
 		department: text(),
 		email: text(),
 		website: text(),
-		research_interests: text().array(),
+		research_interests: text("research_interests_new").array(),
 		name: text(),
 		university_logo: text(),
 		ranking: text(),
 		google_scholar: text(),
 		citations: integer(),
-		accepting_students: boolean("accepting_students"),
-		embedding: vector("embedding", { dimensions: 1024 }),
+		accepting_students: text("accepting_students"),
+		embedding: vector("embeddings_new", { dimensions: 1024 }),
 	},
 	(table) => ({
 		embeddingIndex: index("embeddingIndex").using(
@@ -46,7 +46,7 @@ export const dbProfSchema = z.object({
 	rankings: z.string().nullable(),
 	google_scholar: z.string().nullable(),
 	citations: z.number(),
-	accepting_students: z.boolean().nullable(),
+	accepting_students: z.string().nullable(),
 	similarity: z.number(),
 })
 
