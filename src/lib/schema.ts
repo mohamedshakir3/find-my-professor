@@ -23,7 +23,7 @@ export const professors = pgTable(
 		google_scholar: text(),
 		citations: integer(),
 		accepting_students: text("accepting_students"),
-		embedding: vector("embeddings_new", { dimensions: 1024 }),
+		embedding: vector("embeddings_new", { dimensions: 384 }),
 	},
 	(table) => ({
 		embeddingIndex: index("embeddingIndex").using(

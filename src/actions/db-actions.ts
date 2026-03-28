@@ -101,7 +101,7 @@ export const getProfessors = async (
 				sort_by: sortBy,
 				p_limit: limit,
 				p_offset: offset,
-				...(acceptingStudents && { p_accepting_students: "Yes" }),
+				p_accepting_students: acceptingStudents ? "Yes" : null,
 			})
 
 			if (error) throw new Error(error.message)
@@ -110,6 +110,7 @@ export const getProfessors = async (
 				...row,
 				research_interests: research_interests_new,
 			})) as (DBProf & { total_count: number })[]
+
 			return {
 				professors: results,
 				total: results[0]?.total_count ?? 0,
