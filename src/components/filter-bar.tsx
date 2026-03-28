@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronDown, X, Check, ArrowUpDown, GraduationCap } from "lucide-react"
+import { ChevronDown, X, Check, ArrowUpDown, GraduationCap, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -12,6 +12,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useSharedTransition } from "@/hooks/use-shared-transition"
 
@@ -207,18 +212,28 @@ export function FilterBar({
           selected={selectedDepartments}
           onToggle={onToggleDepartment}
         />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onToggleAccepting}
-          className={cn(
-            "h-9 gap-1.5 border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50",
-            acceptingStudents && "border-[#31404f] bg-[#31404f] text-white hover:bg-[#3a5a52] hover:text-white"
-          )}
-        >
-          <GraduationCap className="h-3.5 w-3.5" />
-          Accepting Students
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onToggleAccepting}
+              className={cn(
+                "h-9 gap-1.5 border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50",
+                acceptingStudents && "border-[#31404f] bg-[#31404f] text-white hover:bg-[#3a5a52] hover:text-white"
+              )}
+            >
+              <GraduationCap className="h-3.5 w-3.5" />
+              Accepting Students
+              <Info className={cn("h-3 w-3 text-gray-400", acceptingStudents && "text-white/70")} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="max-w-64 text-center">
+            Only shows professors who have explicitly indicated they are
+            accepting students. Professors without this filter may still be
+            accepting students.
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       <div className="flex items-center gap-2 sm:ml-auto">

@@ -13,6 +13,64 @@ interface PaginatedResult<T> {
 	pageSize: number
 }
 
+export interface FilterOptions {
+	universities: string[]
+	faculties: string[]
+	departments: string[]
+	// Maps for cascading: university → faculties, faculty → departments
+	universityFaculties: Record<string, string[]>
+	facultyDepartments: Record<string, string[]>
+	universityDepartments: Record<string, string[]>
+}
+
+export const getFilterOptions = async (): Promise<FilterOptions> => {
+	const supabase = await createClient()
+	const { data, error } = await supabase
+		.from("professors")
+		.select("university, faculty, department")
+
+	if (error) throw new Error(error.message)
+
+	const universities = new Set<string>()
+	const faculties = new Set<string>()
+	const departments = new Set<string>()
+	const universityFaculties: Record<string, Set<string>> = {}
+	const facultyDepartments: Record<string, Set<string>> = {}
+	const universityDepartments: Record<string, Set<string>> = {}
+
+	for (const row of data ?? []) {
+		if (row.university) {
+			universities.add(row.university)
+			if (row.faculty) {
+				;(universityFaculties[row.university] ??= new Set()).add(row.faculty)
+			}
+			if (row.department) {
+				;(universityDepartments[row.university] ??= new Set()).add(row.department)
+			}
+		}
+		if (row.faculty) {
+			faculties.add(row.faculty)
+			if (row.department) {
+				;(facultyDepartments[row.faculty] ??= new Set()).add(row.department)
+			}
+		}
+		if (row.department) departments.add(row.department)
+	}
+
+	const toSortedArray = (s: Set<string>) => [...s].sort()
+	const mapToArrays = (m: Record<string, Set<string>>) =>
+		Object.fromEntries(Object.entries(m).map(([k, v]) => [k, toSortedArray(v)]))
+
+	return {
+		universities: toSortedArray(universities),
+		faculties: toSortedArray(faculties),
+		departments: toSortedArray(departments),
+		universityFaculties: mapToArrays(universityFaculties),
+		facultyDepartments: mapToArrays(facultyDepartments),
+		universityDepartments: mapToArrays(universityDepartments),
+	}
+}
+
 export const getProfessors = async (
 	query: string,
 	page: number = 1,

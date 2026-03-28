@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { SearchBox } from "@/components/search-bar"
 import { ProfessorResults } from "@/components/professor-results"
 import { FilterBar, SortOption } from "@/components/filter-bar"
 import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
-import { universities, faculties, departments } from "@/data/universities"
+import type { FilterOptions } from "@/actions/db-actions"
 import Image from "next/image"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useSharedTransition } from "@/hooks/use-shared-transition"
@@ -16,10 +16,12 @@ export default function SearchInterface({
   professors,
   query,
   sort,
+  filterOptions,
 }: {
   professors: DBProf[]
   query?: string
   sort: SortOption
+  filterOptions: FilterOptions
 }) {
   const { startTransition } = useSharedTransition()
   const router = useRouter()
@@ -39,6 +41,37 @@ export default function SearchInterface({
     () => searchParams.get("accepting") === "true"
   )
 
+  // Cascading filter options based on current selections
+  const filteredFaculties = useMemo(() => {
+    if (selectedUniversities.length === 0) return filterOptions.faculties
+    const sets = selectedUniversities.map(
+      (u) => filterOptions.universityFaculties[u] ?? []
+    )
+    return [...new Set(sets.flat())].sort()
+  }, [selectedUniversities, filterOptions])
+
+  const filteredDepartments = useMemo(() => {
+    let depts: string[]
+
+    if (selectedFaculties.length > 0) {
+      // Faculty selected → show departments for those faculties
+      const sets = selectedFaculties.map(
+        (f) => filterOptions.facultyDepartments[f] ?? []
+      )
+      depts = [...new Set(sets.flat())]
+    } else if (selectedUniversities.length > 0) {
+      // Only university selected → show departments for those universities
+      const sets = selectedUniversities.map(
+        (u) => filterOptions.universityDepartments[u] ?? []
+      )
+      depts = [...new Set(sets.flat())]
+    } else {
+      return filterOptions.departments
+    }
+
+    return depts.sort()
+  }, [selectedUniversities, selectedFaculties, filterOptions])
+
   const updateParam = (
     type: "university" | "faculty" | "department",
     value: string,
@@ -53,15 +86,78 @@ export default function SearchInterface({
     startTransition?.(() => router.push(`${pathname}?${params.toString()}`))
   }
 
-  const toggle = (
-    type: "university" | "faculty" | "department",
-    value: string,
-    selected: string[],
-    setSelected: (v: string[]) => void
-  ) => {
-    const isAdd = !selected.includes(value)
-    setSelected(isAdd ? [...selected, value] : selected.filter((v) => v !== value))
-    updateParam(type, value, isAdd)
+  const toggleUniversity = (value: string) => {
+    const isAdd = !selectedUniversities.includes(value)
+    const nextUnis = isAdd
+      ? [...selectedUniversities, value]
+      : selectedUniversities.filter((v) => v !== value)
+    setSelectedUniversities(nextUnis)
+
+    // Compute which faculties/departments are still valid
+    const validFaculties =
+      nextUnis.length > 0
+        ? new Set(nextUnis.flatMap((u) => filterOptions.universityFaculties[u] ?? []))
+        : null
+    const validDepts =
+      nextUnis.length > 0
+        ? new Set(nextUnis.flatMap((u) => filterOptions.universityDepartments[u] ?? []))
+        : null
+
+    const nextFaculties = validFaculties
+      ? selectedFaculties.filter((f) => validFaculties.has(f))
+      : selectedFaculties
+    const nextDepts = validDepts
+      ? selectedDepartments.filter((d) => validDepts.has(d))
+      : selectedDepartments
+
+    setSelectedFaculties(nextFaculties)
+    setSelectedDepartments(nextDepts)
+
+    // Build params with cleaned-up child filters
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("university")
+    params.delete("faculty")
+    params.delete("department")
+    params.delete("page")
+    nextUnis.forEach((v) => params.append("university", v))
+    nextFaculties.forEach((v) => params.append("faculty", v))
+    nextDepts.forEach((v) => params.append("department", v))
+    startTransition?.(() => router.push(`${pathname}?${params.toString()}`))
+  }
+
+  const toggleFaculty = (value: string) => {
+    const isAdd = !selectedFaculties.includes(value)
+    const nextFaculties = isAdd
+      ? [...selectedFaculties, value]
+      : selectedFaculties.filter((v) => v !== value)
+    setSelectedFaculties(nextFaculties)
+
+    // Compute which departments are still valid
+    const validDepts =
+      nextFaculties.length > 0
+        ? new Set(nextFaculties.flatMap((f) => filterOptions.facultyDepartments[f] ?? []))
+        : null
+    const nextDepts = validDepts
+      ? selectedDepartments.filter((d) => validDepts.has(d))
+      : selectedDepartments
+    setSelectedDepartments(nextDepts)
+
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("faculty")
+    params.delete("department")
+    params.delete("page")
+    nextFaculties.forEach((v) => params.append("faculty", v))
+    nextDepts.forEach((v) => params.append("department", v))
+    startTransition?.(() => router.push(`${pathname}?${params.toString()}`))
+  }
+
+  const toggleDepartment = (value: string) => {
+    const isAdd = !selectedDepartments.includes(value)
+    const next = isAdd
+      ? [...selectedDepartments, value]
+      : selectedDepartments.filter((v) => v !== value)
+    setSelectedDepartments(next)
+    updateParam("department", value, isAdd)
   }
 
   const handleToggleAccepting = () => {
@@ -108,21 +204,15 @@ export default function SearchInterface({
         <SearchBox query={query} />
 
         <FilterBar
-          universities={universities}
-          faculties={faculties}
-          departments={departments}
+          universities={filterOptions.universities}
+          faculties={filteredFaculties}
+          departments={filteredDepartments}
           selectedUniversities={selectedUniversities}
           selectedFaculties={selectedFaculties}
           selectedDepartments={selectedDepartments}
-          onToggleUniversity={(v) =>
-            toggle("university", v, selectedUniversities, setSelectedUniversities)
-          }
-          onToggleFaculty={(v) =>
-            toggle("faculty", v, selectedFaculties, setSelectedFaculties)
-          }
-          onToggleDepartment={(v) =>
-            toggle("department", v, selectedDepartments, setSelectedDepartments)
-          }
+          onToggleUniversity={toggleUniversity}
+          onToggleFaculty={toggleFaculty}
+          onToggleDepartment={toggleDepartment}
           acceptingStudents={acceptingStudents}
           onToggleAccepting={handleToggleAccepting}
           sort={sort}

@@ -1,5 +1,5 @@
 import SearchInterface from "@/components/search-interface"
-import { getProfessors, SortBy } from "@/actions/db-actions"
+import { getProfessors, getFilterOptions, SortBy } from "@/actions/db-actions"
 import { Suspense } from "react"
 import { SearchLoading } from "@/components/search-loading"
 import { PaginationControls } from "@/components/pagination"
@@ -29,17 +29,16 @@ export default async function ProfessorsPage({
 	const acceptingStudents = accepting === "true" ? true : undefined
 
 	q = q ?? ""
-	const {
-		professors: profs,
-		total,
-		pageSize,
-	} = await getProfessors(q, currentPage, universities, faculties, departments, sortBy, acceptingStudents)
+	const [{ professors: profs, total, pageSize }, filterOptions] = await Promise.all([
+		getProfessors(q, currentPage, universities, faculties, departments, sortBy, acceptingStudents),
+		getFilterOptions(),
+	])
 
 	const numPages = Math.ceil(total / pageSize)
 
 	return (
 		<Suspense fallback={<SearchLoading />}>
-			<SearchInterface professors={profs} query={q} sort={sortBy} />
+			<SearchInterface professors={profs} query={q} sort={sortBy} filterOptions={filterOptions} />
 			{numPages > 1 && (
 				<PaginationControls
 					currentPage={currentPage}
