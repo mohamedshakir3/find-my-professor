@@ -5,7 +5,6 @@ import { ChevronDown, X, Check, ArrowUpDown, GraduationCap, Info } from "lucide-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
 import {
   Popover,
   PopoverContent,
@@ -82,17 +81,12 @@ function FilterDropdown({ label, options, selected, onToggle }: FilterDropdownPr
                 onClick={() => onToggle(option)}
               >
                 <Checkbox
-                  id={`${label}-${option}`}
                   checked={selected.includes(option)}
-                  onCheckedChange={() => onToggle(option)}
                   className="pointer-events-none"
                 />
-                <Label
-                  htmlFor={`${label}-${option}`}
-                  className="text-sm cursor-pointer flex-1 leading-tight"
-                >
+                <span className="text-sm cursor-pointer flex-1 leading-tight">
                   {option}
-                </Label>
+                </span>
                 {selected.includes(option) && (
                   <Check className="h-3.5 w-3.5 text-[#31404f]" />
                 )}
