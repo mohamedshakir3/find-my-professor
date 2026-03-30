@@ -3,15 +3,16 @@ import { Footer } from "@/components/footer"
 import { Card, CardContent } from "@/components/ui/card"
 import { HeroSearch } from "@/components/hero-search"
 import { createClient } from "@/utils/supabase/server"
-import { universities } from "@/data/universities"
 import { GraduationCap, University } from "lucide-react"
 
 async function getStats() {
   const supabase = await createClient()
-  const { count } = await supabase
-    .from("professors")
-    .select("*", { count: "exact", head: true })
-  return { professorCount: count ?? 0, universityCount: universities.length }
+  const [{ count }, { data: unis }] = await Promise.all([
+    supabase.from("professors").select("*", { count: "exact", head: true }),
+    supabase.from("professors").select("university").not("university", "is", null),
+  ])
+  const universityCount = new Set(unis?.map((r) => r.university)).size
+  return { professorCount: count ?? 0, universityCount }
 }
 
 export default async function Home() {
